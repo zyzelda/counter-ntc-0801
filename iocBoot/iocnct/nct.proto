@@ -1,0 +1,30 @@
+# streamDevice protocol file for fuji frequency changer
+
+Terminator = CR LF;
+ReplyTimeout = 2000;
+ReadTimeout = 2000;
+
+# commands for STRT STOP ENTS CLAL?
+Cmd	{out "\$1";}
+
+# set preset value to timer (us)
+SetTimer	{out "STPRF%(VAL)d";}
+
+# read preset timer value (us)
+RdPsTimer	{out "TPRF?"; in "%d";}
+
+# read timer value (us)
+RdTimer	{out "TMR?"; in "%d";}
+
+# read count value
+RdCount	{out "CTR?\$1"; in "%d";}
+
+# read mode
+RdMode	{out "MOD?"; in "%s";}
+
+# read version
+RdVersion	{out "VER?"; in "%s";}
+
+# debug
+Debug	{out "%(VAL)s"; in "%(\$1:DebugReadback.VAL)s"}
+

@@ -1,0 +1,7 @@
+epicsEnvSet("ARCH","linux-x86_64")
+epicsEnvSet("IOC","iocnct")
+epicsEnvSet("TOP","/home/blctrl/BL09B1-NCT0801-SoftIOC")
+epicsEnvSet("SUPPORT","/home/blctrl/BL09B1-NCT0801-SoftIOC/support")
+epicsEnvSet("EPICS_BASE","/BLC/epics/base")
+epicsEnvSet("ASYN","/home/blctrl/BL09B1-NCT0801-SoftIOC/support/asyn")
+epicsEnvSet("CALC","/home/blctrl/BL09B1-NCT0801-SoftIOC/support/calc")

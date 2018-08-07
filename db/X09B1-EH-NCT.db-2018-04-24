@@ -1,0 +1,179 @@
+
+##### Enable to stop count by timer #####
+record(ao, "$(P):ENTS")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(ENTS) nct")
+        field(PINI,"1")
+}
+##### Set preset value to timer #####
+## $(P):SetTimer.A --  unit is second (Dwell Time)
+## $(P):SetTimer.VAL -- unit is us
+record(calcout, "$(P):SetTimer")
+{
+	field(DTYP, "stream")
+	field(CALC, "A*1000000")
+	field(OOPT, "On Change")
+	field(DOPT, "Use CALC")
+	field(OUT, "@nct.proto SetTimer nct")
+	field(FLNK, "$(P):GetTimerPreset")
+	field(PREC, "3")
+}
+
+##### Read preset timer value #####
+## convert us to second
+record(ai, "$(P):GetTimerPreset")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdPsTimer nct")
+	field(FLNK, "$(P):TimerPreset")
+	field(PINI, "YES")
+}
+
+record(calc, "$(P):TimerPreset")
+{
+	field(INPA, "$(P):GetTimerPreset.VAL")
+	field(CALC, "A*1E-6")
+	field(PREC, "3")
+}
+##### Start/Stop counter #####
+record(ao, "$(P):Start")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(STRT) nct")
+}
+
+record(ao, "$(P):Stop")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(STOP) nct")
+}
+
+##### Clear all counter and timer #####
+record(ao, "$(P):ClearAll")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(CLAL?) nct")
+	field(FLNK, "$(P):ProcessAll")
+}
+
+
+record(fanout, "$(P):ProcessAll")
+{
+	field(LNK1, "$(P):CH0")
+	field(LNK2, "$(P):CH1")
+	field(LNK4, "$(P):GetTimer")
+	#field(LNK5, "$(P):StartCalc PP")
+}
+##### Read counter #####
+record(ai, "$(P):CH0")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdCount(00) nct")
+	field(PINI, "YES")
+	#field(FLNK, "$(P):FreqCH0")
+}
+
+record(ai, "$(P):CH1")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdCount(01) nct")
+	field(PINI, "YES")
+	#field(FLNK, "$(P):FreqCH1")
+}
+
+
+##### Read timer #####
+## convert us to second
+record(ai, "$(P):GetTimer")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdTimer nct")
+	field(PINI, "YES")
+	field(FLNK, "$(P):Timer")
+}
+
+record(calc, "$(P):Timer")
+{
+	field(INPA, "$(P):GetTimer.VAL")
+	field(CALC, "A/1000000")
+	field(PREC, "3")
+}
+
+
+
+
+##### Read mode #####
+record(stringin, "$(P):Mode")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdMode nct")
+	field(PINI, "YES")
+}
+
+##### Debug #####
+record(stringout, "$(P):DebugCmd")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Debug($(P)) nct")	
+}
+
+record(stringin, "$(P):DebugReadback")
+{	
+	field(PINI, "YES")
+}
+
+########Count transform vol#######################
+record(bi,"$(P):trigger")
+{
+
+	field(FLNK,"$(P):StartCalc PP")
+}
+
+
+
+record(transform,"$(P):StartCalc")
+{     
+	field(INPA,"$(P):CH0 PP")
+	field(INPB,"$(P):CH1 PP")
+	#field(INPC,"$(P):GetTimer.C PP")
+	field(INPC,"$(P):GetTimer PP")
+
+	field(CLCD,"(C==0)?0:A*10/C")
+	field(CLCE,"(C==0)?0:B*10/C")
+        field(CLCF,"(C==0)?0:A*1e6/C")
+	field(CLCG,"(C==0)?0:B*1e6/C")
+	field(CLCH,"1")
+	field(CLCI,"1")
+	field(OUTD,"$(P):CH0_VOL PP")
+	field(OUTE,"$(P):CH1_VOL PP")
+        field(OUTF,"$(P):CH0_Freq PP")
+	field(OUTG,"$(P):CH1_Freq PP")
+        #field(OUTH,"$(P):ClearAll PP")
+        field(OUTI,"$(P):Start.PROC PP")
+}
+
+record(ai, "$(P):CH0_VOL")
+{
+	field(PREC,"3")
+}
+
+record(ai, "$(P):CH1_VOL")
+{
+        field(PREC,"3")
+}
+
+record(ai, "$(P):CH0_Freq")
+{
+	field(PREC,"3")
+}
+
+record(ai, "$(P):CH1_Freq")
+{
+        field(PREC,"3")
+}
+############################################################
+
+
+
+

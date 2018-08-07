@@ -1,0 +1,159 @@
+
+##### Enable to stop count by timer #####
+record(stringin, "$(P):Mode")
+{
+        field(DTYP, "stream")
+        field(INP, "@nct.proto RdMode nct")
+        field(PINI, "YES")
+}
+
+record(ao, "$(P):ENTS")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(ENTS) nct")
+        field(PINI,"1")
+}
+##### Set preset value to timer #####
+## $(P):SetTimer.A --  unit is second (Dwell Time)
+## $(P):SetTimer.VAL -- unit is us
+record(calcout, "$(P):SetTimer")
+{
+	field(DTYP, "stream")
+	field(CALC, "A*1000000")
+	field(OOPT, "On Change")
+	field(DOPT, "Use CALC")
+	field(OUT, "@nct.proto SetTimer nct")
+	field(FLNK, "$(P):GetTimerPreset")
+	field(PREC, "3")
+}
+
+##### Read preset timer value #####
+## convert us to second
+record(ai, "$(P):GetTimerPreset")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdPsTimer nct NPP")
+	field(FLNK, "$(P):TimerPreset")
+	#field(PINI, "YES")
+}
+
+record(calc, "$(P):TimerPreset")
+{
+	field(INPA, "$(P):GetTimerPreset.VAL NPP")
+	field(CALC, "A*1E-6")
+	field(PINI, "1")
+	field(PREC, "3")
+}
+##### Start/Stop counter #####
+
+record(ao, "$(P):Start")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(STRT) nct")
+}
+
+record(ao, "$(P):Stop")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(STOP) nct")
+}
+
+##### Clear all counter and timer #####
+record(ao, "$(P):ClearAll")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Cmd(CLAL?) nct")
+	field(FLNK, "$(P):ProcessAll")
+	field(PINI, "1")
+}
+
+
+record(fanout, "$(P):ProcessAll")
+{
+	field(LNK1, "$(P):CH0")
+	field(LNK2, "$(P):CH1")
+	field(LNK3, "$(P):Timer")
+	#field(LNK5, "$(P):StartCalc PP")
+}
+##### Read counter #####
+record(ai, "$(P):CH0")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdCount(00) nct")
+	#field(PINI, "YES")
+	#field(FLNK, "$(P):FreqCH0")
+}
+
+record(ai, "$(P):CH1")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdCount(01) nct")
+	#field(PINI, "YES")
+	#field(FLNK, "$(P):FreqCH1")
+}
+
+
+##### Read timer #####
+## convert us to second
+record(ai, "$(P):GetTimer")
+{
+	field(DTYP, "stream")
+	field(INP, "@nct.proto RdTimer nct")
+	#field(PINI, "YES")
+	#field(FLNK, "$(P):Timer")
+}
+
+record(calc, "$(P):Timer")
+{
+	field(INPA, "$(P):GetTimer.VAL PP")
+	field(CALC, "A/1000000")
+	field(PREC, "3")
+}
+
+
+
+
+
+##### Debug #####
+record(stringout, "$(P):DebugCmd")
+{
+	field(DTYP, "stream")
+	field(OUT, "@nct.proto Debug($(P)) nct")	
+}
+
+record(stringin, "$(P):DebugReadback")
+{	
+	field(PINI, "YES")
+}
+
+
+####################read once###################
+
+record(transform, "$(P):readonce")
+{
+	field(INPA, "$(P):CH0 PP")
+	field(INPB, "$(P):CH1 PP")
+	field(INPC, "$(P):Timer PP")
+}
+
+
+############ pydm pv###############
+record(ai, "$(P):V0")
+{
+        field(PREC,"3")
+}
+record(ai, "$(P):V1")
+{
+        field(PREC,"3")
+}
+
+record(ai, "$(P):F0")
+{
+        field(PREC,"3")
+}
+
+record(ai, "$(P):F1")
+{
+        field(PREC,"3")
+}
+
